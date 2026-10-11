@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#3C1EDF">
+    <title th:text="#{erro.titulo}">Ocorreu um erro</title>
+    <link rel="stylesheet" th:href="@{/css/materialis.css}" />
+</head>
+<body>
+    <div class="erro-tela">
+        <div class="erro-card">
+            <h1 th:text="#{erro.titulo}">Ocorreu um erro</h1>
+            <p th:if="${status != null}" th:text="#{erro.status(${status})}">Código 500</p>
+            <p th:text="${message} ?: #{erro.mensagem}">Algo inesperado aconteceu. Tente novamente em instantes.</p>
+            <a class="btn btn-primario" th:href="@{/}" role="button" th:text="#{button.voltar.inicio}">Voltar ao início</a>
+        </div>
+    </div>
+</body>
+</html>

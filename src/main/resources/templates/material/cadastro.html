@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#3C1EDF">
+    <title th:text="${material.id} == null ? #{title.cadastrar.material} : #{title.editar.material}">Material</title>
+    <link rel="stylesheet" th:href="@{/css/materialis.css}" />
+</head>
+<body>
+    <header class="main-header">
+        <a th:href="@{/}" class="logo">Materialis</a>
+        <th:block th:replace="~{fragments/nav :: barra}"></th:block>
+    </header>
+
+    <div class="pagina-cabecalho">
+        <div>
+            <h1 th:text="${material.id} == null ? #{title.cadastrar.material} : #{title.editar.material}">Cadastrar Material</h1>
+            <p th:text="#{material.form.subtitulo}">Preencha os dados do item que você quer disponibilizar para empréstimo.</p>
+        </div>
+    </div>
+
+    <main class="form-card">
+        <form th:object="${material}"
+              th:action="${material.id} == null ? @{/materiais/salvar} : @{/materiais/editar}"
+              method="post" enctype="multipart/form-data">
+            <input type="hidden" th:if="${material.id != null}" th:field="*{id}" />
+            <input type="hidden" name="origem" th:value="${origem}" />
+
+            <div class="form-grade">
+                <div class="campo campo--largo">
+                    <label for="titulo" th:text="#{material.titulo.label}">Título</label>
+                    <input type="text" id="titulo" th:field="*{titulo}" placeholder="Título do material"
+                           th:classappend="${#fields.hasErrors('titulo')} ? 'is-invalid'" />
+                    <div class="erro-campo" th:if="${#fields.hasErrors('titulo')}" th:errors="*{titulo}"></div>
+                </div>
+
+                <div class="campo campo--largo">
+                    <label for="descricao" th:text="#{material.descricao.label}">Descrição</label>
+                    <textarea id="descricao" th:field="*{descricao}" rows="4" placeholder="Descrição do material"
+                              th:classappend="${#fields.hasErrors('descricao')} ? 'is-invalid'"></textarea>
+                    <div class="erro-campo" th:if="${#fields.hasErrors('descricao')}" th:errors="*{descricao}"></div>
+                </div>
+
+                <div class="campo">
+                    <label for="categoria" th:text="#{material.categoria.label}">Categoria</label>
+                    <select id="categoria" th:field="*{categoria}"
+                            th:classappend="${#fields.hasErrors('categoria')} ? 'is-invalid'">
+                        <option value="" disabled th:if="${material.categoria == null}" selected>-- Selecione --</option>
+                        <option th:each="cat : ${T(br.ufscar.dc.dsw.domain.Material.Categoria).values()}"
+                                th:value="${cat}"
+                                th:text="#{${'material.categoria.' + cat}}">Categoria</option>
+                    </select>
+                    <div class="erro-campo" th:if="${#fields.hasErrors('categoria')}" th:errors="*{categoria}"></div>
+                </div>
+
+                <div class="campo">
+                    <label for="estadoConservacao" th:text="#{material.estadoConservacao.label}">Estado de Conservação</label>
+                    <select id="estadoConservacao" th:field="*{estadoConservacao}"
+                            th:classappend="${#fields.hasErrors('estadoConservacao')} ? 'is-invalid'">
+                        <option value="" disabled th:if="${material.estadoConservacao == null}" selected>-- Selecione --</option>
+                        <option th:each="ec : ${T(br.ufscar.dc.dsw.domain.Material.EstadoConservacao).values()}"
+                                th:value="${ec}"
+                                th:text="#{${'material.estadoConservacao.' + ec}}">Estado</option>
+                    </select>
+                    <div class="erro-campo" th:if="${#fields.hasErrors('estadoConservacao')}" th:errors="*{estadoConservacao}"></div>
+                </div>
+
+                <div class="campo campo--largo">
+                    <label for="localRetirada" th:text="#{material.localRetirada.label}">Local de Retirada</label>
+                    <input type="text" id="localRetirada" th:field="*{localRetirada}" placeholder="Local onde retirar"
+                           th:classappend="${#fields.hasErrors('localRetirada')} ? 'is-invalid'" />
+                    <div class="erro-campo" th:if="${#fields.hasErrors('localRetirada')}" th:errors="*{localRetirada}"></div>
+                </div>
+
+                <div class="campo campo--largo">
+                    <label for="imagemFile" th:text="#{material.fotos.label}">Foto do Material</label>
+                    <input type="file" id="imagemFile" name="imagemFile" accept="image/png, image/jpeg, image/jpg" />
+                    <small th:text="#{material.foto.ajuda}">Selecione uma imagem (PNG, JPG, JPEG).</small>
+                    <div th:if="${material.id != null and material.imagem != null}">
+                        <p th:text="#{material.imagem.atual}">Imagem atual:</p>
+                        <div class="preview-imagem">
+                            <img th:src="@{|/materiais/imagem/${material.id}|}" alt="Imagem do Material" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="acoes-form">
+                <button type="submit" class="btn btn-primario" th:text="#{button.salvar}">Salvar</button>
+                <a th:href="@{/materiais/meus-materiais}" th:text="#{button.cancelar}">Cancelar</a>
+            </div>
+        </form>
+    </main>
+
+    <footer>
+        <p th:text="#{footer.texto}">&copy; 2025 Materialis</p>
+    </footer>
+    <div th:replace="~{fragments/nav :: tabs('')}"></div>
+</body>
+</html>

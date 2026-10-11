@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#3C1EDF">
+    <title th:text="#{emprestimo.solicitar.titulo}">Solicitar Empréstimo</title>
+    <link rel="stylesheet" th:href="@{/css/materialis.css}" />
+</head>
+<body>
+    <header class="main-header">
+        <a th:href="@{/}" class="logo">Materialis</a>
+        <th:block th:replace="~{fragments/nav :: barra}"></th:block>
+    </header>
+
+    <div class="pagina-cabecalho">
+        <div>
+            <h1 th:text="#{emprestimo.solicitar.titulo}">Solicitar Empréstimo</h1>
+            <p th:text="#{emprestimo.solicitar.subtitulo}">Informe até quando você precisa do item e o motivo do pedido.</p>
+        </div>
+        <a class="btn-claro" th:href="@{/}" role="button" th:text="#{button.voltar.materiais}">Voltar aos materiais</a>
+    </div>
+
+    <div th:if="${fail}" class="flash fail" role="alert">
+        <span th:text="${fail}"></span>
+    </div>
+
+    <main class="form-card">
+        <form th:action="@{/emprestimos/salvarSolicitacao}" th:object="${emprestimo}" method="POST">
+            <input type="hidden" name="materialId" th:value="${material.id}" />
+
+            <div class="form-grade">
+                <div class="campo campo--largo">
+                    <label for="materialTitulo" th:text="#{emprestimo.material.label}">Material</label>
+                    <input type="text" id="materialTitulo" th:value="${material.titulo}" readonly />
+                </div>
+
+                <div class="campo">
+                    <label for="dataDevolucaoPrevista" th:text="#{emprestimo.dataDevolucaoPrevista.label}">Devolução Prevista</label>
+                    <input type="date" id="dataDevolucaoPrevista" th:field="*{dataDevolucaoPrevista}"
+                           th:classappend="${#fields.hasErrors('dataDevolucaoPrevista')} ? 'is-invalid'" />
+                    <div class="erro-campo" th:if="${#fields.hasErrors('dataDevolucaoPrevista')}" th:errors="*{dataDevolucaoPrevista}"></div>
+                </div>
+
+                <div class="campo campo--largo">
+                    <label for="justificativa" th:text="#{emprestimo.justificativa.label}">Justificativa</label>
+                    <textarea id="justificativa" placeholder="Motivo da solicitação (curto)" th:field="*{justificativa}"
+                              rows="3" th:classappend="${#fields.hasErrors('justificativa')} ? 'is-invalid'"></textarea>
+                    <div class="erro-campo" th:if="${#fields.hasErrors('justificativa')}" th:errors="*{justificativa}"></div>
+                </div>
+            </div>
+
+            <div class="acoes-form">
+                <button type="submit" class="btn btn-primario" th:text="#{button.enviar.solicitacao}">Enviar solicitação</button>
+                <a th:href="@{/}" th:text="#{button.cancelar}">Cancelar</a>
+            </div>
+        </form>
+    </main>
+
+    <footer>
+        <p th:text="#{footer.texto}">&copy; 2025 Materialis</p>
+    </footer>
+    <div th:replace="~{fragments/nav :: tabs('')}"></div>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#3C1EDF">
+    <title th:text="#{nav.solicitacoesRecebidas}">Gerenciar Solicitações</title>
+    <link rel="stylesheet" th:href="@{/css/materialis.css}" />
+</head>
+<body>
+    <header class="main-header">
+        <a th:href="@{/}" class="logo">Materialis</a>
+        <th:block th:replace="~{fragments/nav :: barra}"></th:block>
+    </header>
+
+    <div class="pagina-cabecalho">
+        <div>
+            <h1 th:text="#{solicitacao.titulo}">Solicitações recebidas</h1>
+            <p th:text="#{solicitacao.subtitulo}">Aprove ou recuse os pedidos de empréstimo dos seus materiais.</p>
+        </div>
+    </div>
+
+    <div th:if="${sucesso}" class="flash success" role="alert">
+        <span th:text="${sucesso}"></span>
+    </div>
+    <div th:if="${fail}" class="flash fail" role="alert">
+        <span th:text="${fail}"></span>
+    </div>
+
+    <div class="emprestimo-grid">
+        <p class="emprestimo-vazio" th:if="${#lists.isEmpty(solicitacoes)}" th:text="#{solicitacao.naoEncontrada}">Nenhuma solicitação encontrada.</p>
+
+        <article class="emprestimo-card" th:each="solicitacao : ${solicitacoes}">
+            <div class="emprestimo-card__topo">
+                <span class="status" th:classappend="${'status--' + solicitacao.status}"
+                      th:text="#{${'emprestimo.status.' + solicitacao.status}}">Status</span>
+                <h2 class="emprestimo-card__titulo" th:text="${solicitacao.material.titulo}">Material</h2>
+                <p class="emprestimo-card__dono"
+                   th:text="#{solicitacao.por(${solicitacao.estudante.nome}, ${solicitacao.estudante.email})}">Solicitado por Fulano</p>
+            </div>
+
+            <dl class="emprestimo-card__ficha">
+                <div>
+                    <dt th:text="#{emprestimo.dataSolicitacao.label}">Data da Solicitação</dt>
+                    <dd th:text="${#temporals.format(solicitacao.dataSolicitacao, 'dd/MM/yyyy')}">01/01/2026</dd>
+                </div>
+                <div>
+                    <dt th:text="#{emprestimo.dataDevolucaoPrevista.label}">Devolução Prevista</dt>
+                    <dd th:text="${#temporals.format(solicitacao.dataDevolucaoPrevista, 'dd/MM/yyyy')}">01/01/2026</dd>
+                </div>
+                <div>
+                    <dt th:text="#{emprestimo.local.label}">Retirada</dt>
+                    <dd th:text="${solicitacao.material.localRetirada}">Local</dd>
+                </div>
+            </dl>
+
+            <p class="emprestimo-card__justificativa"
+               th:text="#{emprestimo.justificativa.valor(${solicitacao.justificativa})}">"Justificativa"</p>
+
+            <div class="emprestimo-card__acoes"
+                 th:if="${solicitacao.status == T(br.ufscar.dc.dsw.domain.Emprestimo.Status).ABERTO}">
+                <form th:action="@{/emprestimos/aprovar/{id}(id=${solicitacao.id})}" method="post">
+                    <button type="submit" class="btn btn-success" th:text="#{button.aprovar}">Aprovar</button>
+                </form>
+                <form th:action="@{/emprestimos/recusar/{id}(id=${solicitacao.id})}" method="post">
+                    <input type="hidden" name="justificativa" value="Recusado pelo doador." />
+                    <button type="submit" class="btn btn-danger"
+                            th:attr="onclick='return confirm(\'' + #{confirm.recusar} + '\');'"
+                            th:text="#{button.recusar}">Recusar</button>
+                </form>
+            </div>
+        </article>
+    </div>
+
+    <footer>
+        <p th:text="#{footer.texto}">&copy; 2025 Materialis</p>
+    </footer>
+    <div th:replace="~{fragments/nav :: tabs('solicitacoes')}"></div>
+</body>
+</html>

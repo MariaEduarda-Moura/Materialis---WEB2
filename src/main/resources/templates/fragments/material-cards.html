@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+    <div th:fragment="grid(materiais, vigentes, usuarioLogadoId, modo)" 
+         class="grid grid-cols-[repeat(auto-fill,minmax(215px,1fr))] gap-4 w-full max-w-[1280px] mx-auto my-6 px-4 items-stretch">
+        
+        <p class="col-span-full py-12 px-4 text-center text-gray-500 bg-white border border-dashed border-gray-300 rounded-2xl" 
+           th:if="${#lists.isEmpty(materiais)}" 
+           th:text="#{material.naoEncontrado}">Nenhum material encontrado.</p>
+
+        <article class="flex flex-col bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200"
+                 th:each="material : ${materiais}"
+                 th:with="vigente=${vigentes.get(material.id)}, ehDono=${modo == 'meus' or material.estudante.id == usuarioLogadoId}">
+            
+            <!-- Foto 4:3 com cantos e badges -->
+            <div class="relative w-full aspect-[4/3] overflow-hidden bg-gradient-to-br from-[#EDE8FF] to-[#E4DAFF] border-b border-gray-200 flex items-center justify-center">
+                <img th:if="${material.imagem != null}"
+                     th:src="@{/materiais/imagem/{id}(id=${material.id})}"
+                     th:alt="${material.titulo}" 
+                     class="w-full h-full object-cover block" 
+                     loading="lazy" />
+                <span th:if="${material.imagem == null}" 
+                      class="text-xs text-gray-400 italic" 
+                      th:text="#{material.semImagem}">Sem imagem</span>
+
+                <!-- Badges -->
+                <span th:if="${vigente == null}" 
+                      class="absolute top-2.5 left-2.5 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider rounded-full shadow-sm bg-[#D1FADF] text-[#027A48]"
+                      th:text="#{material.situacao.disponivel}">Disponível</span>
+                
+                <span th:if="${vigente != null and vigente.status == T(br.ufscar.dc.dsw.domain.Emprestimo.Status).EM_ANDAMENTO}"
+                      class="absolute top-2.5 left-2.5 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider rounded-full shadow-sm bg-[#FEE4E2] text-[#B42318]"
+                      th:text="#{material.situacao.alugado}">Alugado</span>
+                
+                <span th:if="${vigente != null and vigente.status == T(br.ufscar.dc.dsw.domain.Emprestimo.Status).APROVADO}"
+                      class="absolute top-2.5 left-2.5 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider rounded-full shadow-sm bg-[#FEF0C7] text-[#B54708]"
+                      th:text="#{material.situacao.reservado}">Reservado</span>
+            </div>
+
+            <!-- Conteúdo -->
+            <div class="flex-1 flex flex-col p-4 gap-2">
+                <span class="text-[11px] font-extrabold uppercase tracking-wider text-[#3C1EDF]" 
+                      th:text="#{${'material.categoria.' + material.categoria}}">Categoria</span>
+                
+                <h2 class="text-sm font-bold text-gray-900 leading-snug line-clamp-2" 
+                    th:text="${material.titulo}">Título</h2>
+                
+                <p class="text-xs text-gray-500 line-clamp-3 leading-relaxed" 
+                   th:text="${material.descricao}">Descrição</p>
+
+                <!-- Ficha sem cortar texto (permite quebra de linha natural à direita) -->
+                <dl class="grid gap-1 mt-auto pt-3 text-xs">
+                    <div class="flex justify-between items-baseline gap-2 pt-1.5 border-t border-dashed border-gray-200">
+                        <dt class="text-gray-400 font-semibold shrink-0" th:text="#{material.estadoConservacao.label}">Estado de Conservação</dt>
+                        <dd class="text-right text-gray-800 font-medium" th:text="#{${'material.estadoConservacao.' + material.estadoConservacao}}">Bom</dd>
+                    </div>
+                    <div class="flex justify-between items-baseline gap-2 pt-1.5 border-t border-dashed border-gray-200">
+                        <dt class="text-gray-400 font-semibold shrink-0" th:text="#{material.localRetirada.label}">Local de Retirada</dt>
+                        <dd class="text-right text-gray-800 font-medium" th:text="${material.localRetirada}">Campus</dd>
+                    </div>
+                    <div th:if="${modo != 'meus'}" class="flex justify-between items-baseline gap-2 pt-1.5 border-t border-dashed border-gray-200">
+                        <dt class="text-gray-400 font-semibold shrink-0" th:text="#{material.dono.label}">Dono</dt>
+                        <dd class="text-right text-gray-800 font-medium" th:text="${material.estudante?.nome}">Nome</dd>
+                    </div>
+                </dl>
+
+                <!-- Avisos de Empréstimo -->
+                <p th:if="${vigente != null and vigente.status == T(br.ufscar.dc.dsw.domain.Emprestimo.Status).EM_ANDAMENTO}"
+                   class="flex flex-col gap-0.5 p-2 text-xs font-semibold rounded-lg bg-[#FEE4E2] text-[#B42318] mt-2">
+                    <span th:text="#{material.situacao.com(${vigente.estudante.nome})}">Com Fulano</span>
+                    <small class="font-normal opacity-90" th:text="#{material.devolucaoPrevista(${#temporals.format(vigente.dataDevolucaoPrevista, 'dd/MM/yyyy')})}"></small>
+                </p>
+                <p th:if="${vigente != null and vigente.status == T(br.ufscar.dc.dsw.domain.Emprestimo.Status).APROVADO}"
+                   class="flex flex-col gap-0.5 p-2 text-xs font-semibold rounded-lg bg-[#FEF0C7] text-[#B54708] mt-2">
+                    <span th:text="#{material.situacao.reservadoPara(${vigente.estudante.nome})}">Reservado para Fulano</span>
+                    <small class="font-normal opacity-90" th:text="#{material.devolucaoPrevista(${#temporals.format(vigente.dataDevolucaoPrevista, 'dd/MM/yyyy')})}"></small>
+                </p>
+            </div>
+
+            <!-- Ações com cores sólidas -->
+            <div class="flex flex-wrap gap-2 px-4 pb-4">
+                <th:block sec:authorize="isAuthenticated()">
+                    <a th:if="${ehDono}" class="flex-1 text-center py-2 px-3 text-xs font-bold rounded-xl bg-[#5935E7] text-white hover:bg-[#3C1EDF] transition-colors"
+                       th:href="@{/materiais/editar/{id}(id=${material.id}, origem=${modo == 'meus' ? 'meus' : 'listar'})}" role="button" th:text="#{button.editar}">Editar</a>
+                    <a th:if="${ehDono}" class="flex-1 text-center py-2 px-3 text-xs font-bold rounded-xl bg-[#C02633] text-white hover:bg-[#A31F2A] transition-colors"
+                       th:href="@{/materiais/excluir/{id}(id=${material.id})}"
+                       th:attr="onclick='return confirm(\'' + #{confirm.excluir} + '\');'" role="button" th:text="#{button.excluir}">Excluir</a>
+                    
+                    <a th:if="${!ehDono and vigente == null}" class="w-full text-center py-2.5 px-4 text-xs font-bold rounded-xl bg-[#3C1EDF] text-white hover:bg-[#3018B8] shadow-sm transition-colors"
+                       th:href="@{/emprestimos/solicitar/{id}(id=${material.id})}" role="button" th:text="#{button.solicitar}">Solicitar</a>
+                    <span th:if="${!ehDono and vigente != null}" class="w-full text-center py-2.5 px-4 text-xs font-semibold rounded-xl bg-gray-100 text-gray-400 cursor-not-allowed" 
+                          th:text="#{button.indisponivel}">Indisponível</span>
+                </th:block>
+
+                <th:block sec:authorize="isAnonymous()">
+                    <a th:if="${vigente == null}" class="w-full text-center py-2.5 px-4 text-xs font-bold rounded-xl bg-[#3C1EDF] text-white hover:bg-[#3018B8] shadow-sm transition-colors"
+                       th:href="@{/login}" role="button" th:text="#{button.solicitar.login}">Fazer login para solicitar</a>
+                    <span th:if="${vigente != null}" class="w-full text-center py-2.5 px-4 text-xs font-semibold rounded-xl bg-gray-100 text-gray-400 cursor-not-allowed" 
+                          th:text="#{button.indisponivel}">Indisponível</span>
+                </th:block>
+            </div>
+        </article>
+    </div>
+</body>
+</html>

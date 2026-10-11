@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+    <div th:fragment="grid(emprestimos)" 
+         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full max-w-[1280px] mx-auto my-4 px-4 items-stretch">
+        
+        <p class="col-span-full py-8 px-4 text-center text-gray-500 bg-white border border-dashed border-gray-200 rounded-xl" 
+           th:if="${#lists.isEmpty(emprestimos)}" 
+           th:text="#{emprestimo.naoEncontrado}">Nenhum empréstimo encontrado.</p>
+
+        <article class="flex flex-col gap-3 p-4 bg-white border border-gray-200 rounded-xl transition-shadow duration-200 hover:shadow-md" 
+                 th:each="emprestimo : ${emprestimos}">
+            
+            <div class="flex flex-col gap-1">
+                <span class="self-start px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider rounded-full"
+                      th:classappend="${emprestimo.status == T(br.ufscar.dc.dsw.domain.Emprestimo.Status).ABERTO ? 'bg-amber-100 text-amber-800' : 
+                                      (emprestimo.status == T(br.ufscar.dc.dsw.domain.Emprestimo.Status).APROVADO ? 'bg-indigo-100 text-indigo-800' : 
+                                      (emprestimo.status == T(br.ufscar.dc.dsw.domain.Emprestimo.Status).EM_ANDAMENTO ? 'bg-rose-100 text-rose-800' : 
+                                      (emprestimo.status == T(br.ufscar.dc.dsw.domain.Emprestimo.Status).CONCLUIDO ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-600')))}"
+                      th:text="#{${'emprestimo.status.' + emprestimo.status}}">Status</span>
+                <h2 class="text-base font-bold text-gray-900 leading-tight" th:text="${emprestimo.material.titulo}">Material</h2>
+                <p class="text-xs text-gray-500"
+                   th:text="#{emprestimo.comDono(${emprestimo.material.estudante?.nome}, ${emprestimo.material.localRetirada})}">Com Maria, retirada em Bloco A</p>
+            </div>
+
+            <!-- Ficha Técnica de Datas -->
+            <dl class="grid gap-1 text-xs">
+                <div class="flex justify-between gap-3 pt-1 border-t border-dashed border-gray-200">
+                    <dt class="text-gray-400 font-semibold" th:text="#{emprestimo.dataSolicitacao.label}">Data da Solicitação</dt>
+                    <dd class="text-right text-gray-700" th:text="${#temporals.format(emprestimo.dataSolicitacao, 'dd/MM/yyyy')}">01/01/2026</dd>
+                </div>
+                <div class="flex justify-between gap-3 pt-1 border-t border-dashed border-gray-200">
+                    <dt class="text-gray-400 font-semibold" th:text="#{emprestimo.dataDevolucaoPrevista.label}">Devolução Prevista</dt>
+                    <dd class="text-right text-gray-700" th:text="${#temporals.format(emprestimo.dataDevolucaoPrevista, 'dd/MM/yyyy')}">01/01/2026</dd>
+                </div>
+                <div class="flex justify-between gap-3 pt-1 border-t border-dashed border-gray-200">
+                    <dt class="text-gray-400 font-semibold" th:text="#{emprestimo.dataDevolucaoReal.label}">Devolução Real</dt>
+                    <dd class="text-right text-gray-700">
+                        <span th:if="${emprestimo.dataDevolucaoReal}" th:text="${#temporals.format(emprestimo.dataDevolucaoReal, 'dd/MM/yyyy')}">01/01/2026</span>
+                        <span th:unless="${emprestimo.dataDevolucaoReal}" th:text="#{emprestimo.semData}">-</span>
+                    </dd>
+                </div>
+            </dl>
+
+            <p class="pl-2.5 text-xs text-gray-500 italic border-l-2 border-indigo-400"
+               th:text="#{emprestimo.justificativa.valor(${emprestimo.justificativa})}">"Justificativa"</p>
+
+            <!-- Ações -->
+            <div class="flex flex-wrap gap-2 mt-auto">
+                <div class="w-full flex" th:if="${emprestimo.status == T(br.ufscar.dc.dsw.domain.Emprestimo.Status).APROVADO}">
+                    <form th:action="@{/emprestimos/iniciar/{id}(id=${emprestimo.id})}" method="post" class="w-full flex">
+                        <button type="submit" class="w-full py-1.5 px-3 text-xs font-semibold rounded-lg bg-emerald-600 text-white hover:bg-emerald-700" 
+                                th:text="#{button.iniciar.emprestimo}">Iniciar Empréstimo</button>
+                    </form>
+                </div>
+                <div class="w-full flex" th:if="${emprestimo.status == T(br.ufscar.dc.dsw.domain.Emprestimo.Status).EM_ANDAMENTO}">
+                    <form th:action="@{/emprestimos/concluir/{id}(id=${emprestimo.id})}" method="post" class="w-full flex">
+                        <button type="submit" class="w-full py-1.5 px-3 text-xs font-semibold rounded-lg bg-sky-600 text-white hover:bg-sky-700" 
+                                th:text="#{button.concluir.emprestimo}">Concluir Empréstimo</button>
+                    </form>
+                </div>
+                <p class="text-xs font-semibold text-amber-600"
+                   th:if="${emprestimo.status == T(br.ufscar.dc.dsw.domain.Emprestimo.Status).ABERTO}"
+                   th:text="#{status.aguardando}">Aguardando aprovação</p>
+            </div>
+        </article>
+    </div>
+</body>
+</html>

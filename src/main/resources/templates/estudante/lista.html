@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#3C1EDF">
+    <title th:text="#{estudante.lista.titulo}">Estudantes</title>
+    <link rel="stylesheet" th:href="@{/css/materialis.css}" />
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <header class="main-header">
+        <a th:href="@{/}" class="logo">Materialis</a>
+        <th:block th:replace="~{fragments/nav :: barra}"></th:block>
+    </header>
+
+    <div class="pagina-cabecalho">
+        <div>
+            <h1 th:text="#{estudante.lista.titulo}">Estudantes</h1>
+            <p th:text="#{estudante.lista.subtitulo}">Gerencie os estudantes cadastrados na plataforma.</p>
+        </div>
+        <a class="btn-claro" th:href="@{/estudantes/cadastrar}" role="button" th:text="#{button.novo.estudante}">Novo Estudante</a>
+    </div>
+
+    <div th:if="${sucesso}" class="flash success" role="alert">
+        <span th:text="${sucesso}"></span>
+    </div>
+    <div th:if="${fail}" class="flash fail" role="alert">
+        <span th:text="${fail}"></span>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-[1280px] mx-auto my-6 px-4 items-stretch">
+        <p class="col-span-full py-12 px-4 text-center text-gray-500 bg-white border border-dashed border-gray-300 rounded-2xl" 
+           th:if="${#lists.isEmpty(estudantes)}" 
+           th:text="#{estudante.naoEncontrado}">Nenhum estudante encontrado.</p>
+
+        <article class="flex flex-col justify-between p-6 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-200" 
+                 th:each="estudante : ${estudantes}">
+            <div>
+                <!-- Topo / Avatar circular -->
+                <div class="flex items-center gap-3.5 mb-5">
+                    <span class="w-12 h-12 shrink-0 flex items-center justify-center rounded-full text-lg font-bold text-white bg-gradient-to-br from-[#3C1EDF] to-[#5935E7]" 
+                          th:text="${#strings.toUpperCase(#strings.substring(estudante.nome, 0, 1))}">M</span>
+                    <div class="overflow-hidden">
+                        <h2 class="text-base font-bold text-gray-900 leading-tight" th:text="${estudante.nome}">Nome</h2>
+                        <span class="text-[11px] font-extrabold uppercase tracking-wider text-[#3C1EDF]" 
+                              th:text="#{${'estudante.papel.' + estudante.role}}">Estudante</span>
+                    </div>
+                </div>
+
+                <!-- Dados do Estudante com linhas tracejadas completas -->
+                <dl class="grid gap-1.5 text-xs">
+                    <div class="flex justify-between items-baseline gap-2 pt-2 border-t border-dashed border-gray-200">
+                        <dt class="text-gray-400 font-semibold shrink-0" th:text="#{estudante.cpf.label}">CPF</dt>
+                        <dd class="text-right text-gray-800 font-medium" th:text="${estudante.cpf}">00000000000</dd>
+                    </div>
+                    <div class="flex justify-between items-baseline gap-2 pt-2 border-t border-dashed border-gray-200">
+                        <dt class="text-gray-400 font-semibold shrink-0" th:text="#{estudante.email.label}">E-mail</dt>
+                        <dd class="text-right text-gray-800 font-medium break-all" th:text="${estudante.email}">email@email.com</dd>
+                    </div>
+                    <div class="flex justify-between items-baseline gap-2 pt-2 border-t border-dashed border-gray-200">
+                        <dt class="text-gray-400 font-semibold shrink-0" th:text="#{estudante.ra.label}">RA</dt>
+                        <dd class="text-right text-gray-800 font-medium" th:text="${estudante.ra}">000000</dd>
+                    </div>
+                    <div class="flex justify-between items-baseline gap-2 pt-2 border-t border-dashed border-gray-200">
+                        <dt class="text-gray-400 font-semibold shrink-0" th:text="#{estudante.telefone.label}">Telefone</dt>
+                        <dd class="text-right text-gray-800 font-medium" th:text="${estudante.telefone}">00000000000</dd>
+                    </div>
+                </dl>
+            </div>
+
+            <!-- Ações com botões sólidos (Roxo e Vermelho idênticos à primeira imagem) -->
+            <div class="flex gap-3 pt-5 mt-4">
+                <a class="flex-1 text-center py-2.5 px-4 text-xs font-bold rounded-xl bg-[#5935E7] text-white hover:bg-[#3C1EDF] transition-colors" 
+                   th:href="@{/estudantes/editar/{id}(id=${estudante.id})}" 
+                   role="button" th:text="#{button.editar}">Editar</a>
+                <a class="flex-1 text-center py-2.5 px-4 text-xs font-bold rounded-xl bg-[#C02633] text-white hover:bg-[#A31F2A] transition-colors" 
+                   th:href="@{/estudantes/excluir/{id}(id=${estudante.id})}"
+                   th:attr="onclick='return confirm(\'' + #{confirm.excluir.estudante} + '\');'" 
+                   role="button" th:text="#{button.excluir}">Excluir</a>
+            </div>
+        </article>
+    </div>
+
+    <footer>
+        <p th:text="#{footer.texto}">&copy; 2025 Materialis</p>
+    </footer>
+    <div th:replace="~{fragments/nav :: tabs('estudantes')}"></div>
+</body>
+</html>
